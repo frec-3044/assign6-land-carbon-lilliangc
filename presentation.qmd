@@ -1,0 +1,76 @@
+---
+title: "Land Carbon Module"
+format: revealjs
+editor: visual
+---
+
+## Atmospheric CO2 is rising
+
+![](assignment/img/keeling-curve.png){fig-align="center"}
+
+::: aside
+https://keelingcurve.ucsd.edu
+:::
+
+## Vegetation carbon is important
+
+![](assignment/img/carbon-budget-2022.png){fig-align="center" width="814"}
+
+::: aside
+https://doi.org/10.5194/essd-14-4811-2022
+:::
+
+## NEON
+
+{{< video https://www.youtube.com/embed/39YrzpxVRF8 width="100%" height="85%">}}
+
+## NEON: 81 sites
+
+![](assignment/img/neon-all-sites.png){fig-align="center" width="592"}
+
+::: aside
+https://www.neonscience.org/field-sites/explore-field-sites
+:::
+
+## NEON Woody Carbon
+
+-   Each site has a set of plots (either "tower" or "distributed")
+-   Each tree is mapped (species)
+-   Each year, each tree is measured: status (live or dead) and diameter
+
+![](assignment/img/plot_design.png){fig-align="center"}
+
+## NEON Woody Carbon
+
+-   Diameter can be converted to biomass using "allometric" relationships
+-   Biomass can be converted to carbon (carbon = biomass x 0.5)
+-   Allometric relationships are from Jenkin et al. (2004)
+
+![](assignment/img/allometrics_plot.png){fig-align="center"}
+
+## NEON Woody Carbon
+
+-   Carbon for individual trees is summed within a plot to determine the plot carbon each year
+-   The summed carbon is divided by the area (m\^2) of the plot to standardize across plots of different size
+-   All plots within a site averaged to get a site-level carbon for each year.
+
+![](assignment/img/plot_design.png){fig-align="center"}
+
+## Structure of data
+
+-   Data is spread across multiple tables
+-   The data are stored in a relational database.
+
+![](assignment/img/database_structure.png){fig-align="center"}
+
+## New skills
+
+- Reading in database in R (`collect`)
+- Joining tables to create data frames for analysis (`left_join`)
+- Filtering on strings (`str_detect`)
+
+## Science Question
+
+- How much carbon is stored in a forest ecosystem and how does it differ across the U.S.?
+- I am a "client" interested in the carbon storage in vegetation of different ecosystems across the continental U.S. to guide my investment in the California Carbon Market.
+- Specifically, I want carbon stocks estimates from four sites in NEON
