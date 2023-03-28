@@ -290,15 +290,17 @@ individual_final <- individual_allometrics |>
 
 
 **Question 3:** Using the table from Question 2, calculate the carbon of each tree that is alive in each plotID - year combination following the instructions above.
+biomass equation: bm = Exp(B0 + B1*ln(dbh))
+-   bm = total aboveground biomass (kg) for trees 2.5 cm dbh and larger
+-   dbh = diameter at breast height (cm)
+-   Exp = exponential function
+-   ln = natural log base "e"
 
 **Answer 3:**
 
 ```{r}
-
-```
-```{r}
-## TROUBLE SHOOTING ##
-
+#calculating the carbon of each tree
+individual_final <- individual_final |> mutate(carbon = 0.5*(exp(B0 + B1*log(stemDiameter, base = exp(1)))))
 
 ```
 
@@ -307,25 +309,44 @@ individual_final <- individual_allometrics |>
 **Answer 4:**
 
 ```{r}
+#grouping every plotID - year combo
+individual_grouped <- individual_final |> 
+  group_by(year, plotID, siteID) |> 
+  summarize(mean_carbon = mean(carbon, na.rm = TRUE)) |> 
+  select(year, plotID, siteID, mean_carbon)
 
 ```
 
 **Question 5:** Using the table from Question 4, use a join to associate a plot area and plot type with each plot. Your columns should be: `siteID`, `plotID`, `carbon`, `plotType`, `totalSampledAreaTrees`, `year` 
 
 ```{r}
+neon_plot <- tbl(con, "plot") |> 
+  filter(siteID %in% c("BLAN","BART", "MLBS", "OSBS")) |> 
+  collect()
+
+individual_plot <- 
+  left_join(individual_grouped, neon_plot, by = c("siteID", "plotID")) |> 
+  select(year, plotID, siteID, plotType, mean_carbon, totalSampledAreaTrees) |>
+  filter(plotType == "tower")
 
 ```
 
 **Question 6:** Using the table from Question 5, Divide the plot carbon by the plot area. Also, make sure you only have the type of plot we want.
 
 ```{r}
+individual_plot <-
+  individual_plot |> mutate(carbonBYarea = mean_carbon/totalSampledAreaTrees)
 
 ```
 
 
-**Question 7:** Using the table Question 6, average the plots within a site/year combination to get site level carbon for each each
+**Question 7:** Using the table Question 6, average the plots within a site/year combination to get site level carbon for each ???
 
 ```{r}
+individual_grouped2 <- individual_plot |> 
+  group_by(year, siteID) |> 
+  summarize(carbon = mean(carbonBYarea, na.rm = TRUE)) |> 
+  select(year, siteID, carbon)
 
 ```
 
@@ -340,7 +361,21 @@ I am looking for the following plots, tables, and text in the Rmarkdown document
 **Answer 8:**
 
 ```{r}
-#INSERT CODE
+site_colors <- c("BLAN" = "purple", "BART" = "forestgreen", "MLBS" = "darkorange", "OSBS" = "cornflowerblue")
+
+# Create the plot
+individual_grouped2 |> 
+  ggplot(aes(year, carbon, color = siteID, shape = siteID)) + 
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(2014, 2022, by = 1)) +
+  scale_color_manual(values = site_colors) +  
+  scale_shape_manual(values = c(19, 17, 23, 4)) +
+  theme_bw() +
+  labs(title = "Mean Live Tree Carbon Stocks for Sites Within the NEON",
+       x = "Year",
+       y = "Carbon Stock [UNITS]")
+
 ```
 
 **Question 9:** Generate a table of values for the site level carbon stocks averaged across years and plots (I recommend using the `kable()` function to generate a clean looking table).
