@@ -249,17 +249,56 @@ Calculate the vegetation carbon stocks of each site for each year using the foll
 
 **Question 2:** Using join functions to create a table with the following columns: `siteID`, `plotID`, `individualID`,`taxonID`, `year`, `plantStatus`, `stemDiameter`,`B0`, `B1`.
 
+-   Blandy Experimental Farm (siteID: BLAN)
+-   Bartlett Experimental Forest (siteID: BART)
+-   Mountain Lake Biological Station (siteID: MLBS)
+-   Ordway-Swisher Biological Station (siteID: OSBS)
+
 **Answer 2:**
 
 ```{r}
+#filtering specific 4 site IDs
+individual <- tbl(con, "individual") |> 
+  filter(siteID %in% c("BLAN","BART", "MLBS", "OSBS")) |> 
+  collect()
+
+#adding taxonID & plotID
+neon_taxon <- tbl(con, "mapping_tagging") |> 
+  filter(siteID %in% c("BLAN","BART", "MLBS", "OSBS")) |> 
+  collect()
+
+individual_mapping <- 
+  left_join(individual, neon_taxon, by = c("siteID", "individualID")) 
+
+#adding B0 and B1
+taxons <- individual_mapping %>% 
+  distinct(taxonID) %>% 
+  pull(taxonID) %>% 
+  as.character()
+
+neon_parameters <- tbl(con, "allometrics") |> 
+  filter(taxonID %in% taxons) |> 
+  collect()
+
+individual_allometrics <- left_join(individual_mapping, neon_parameters, by = c("taxonID"))
+
+individual_final <- individual_allometrics |> 
+  filter(str_detect(plantStatus, "Live"))
 
 ```
+
+
 
 **Question 3:** Using the table from Question 2, calculate the carbon of each tree that is alive in each plotID - year combination following the instructions above.
 
 **Answer 3:**
 
 ```{r}
+
+```
+```{r}
+## TROUBLE SHOOTING ##
+
 
 ```
 
@@ -271,7 +310,7 @@ Calculate the vegetation carbon stocks of each site for each year using the foll
 
 ```
 
-**Question 5:** Using the table from Question 4, use a join to associate a plot area and plot type with each plot. Your columns should be: `siteID`, `plotID`, `carbon`, `plotType`, `totalSampledAreaTrees`
+**Question 5:** Using the table from Question 4, use a join to associate a plot area and plot type with each plot. Your columns should be: `siteID`, `plotID`, `carbon`, `plotType`, `totalSampledAreaTrees`, `year` 
 
 ```{r}
 
