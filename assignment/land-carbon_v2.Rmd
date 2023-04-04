@@ -42,7 +42,7 @@ Explore the descriptions of our four focal NEON sites at <https://www.neonscienc
 
 **Question 1:** Based on information about location and ecosystem type, rank the sites in order of 1 = most vegetation carbon, 4 = least vegetation carbon. Provide a justification for your ranking.
 
-**Answer 1**
+**Answer 1: My rank for the sites in order from most vegetation carbon to least vegetation carbon is BART (1), MLBS (2), OSBS (3), and BLAN (4). The BART and MLBS sites have the greatest diversity of tree species, which are better at storing carbon, due to their underbrush being mainly trees. The BART site is predicted to have slightly higher carbon in vegetation since the average temperature is cooler, which facilitates greater carbon storage. The second lowest carbon storage would be OSBS because there is a variety of trees present in this site, but the underbrush is mostly shrubs and grass, which are not good at storing carbon due to their short life cycle. The BLAN site was predicted to have the lowest amount of carbon stored in vegetation because, according to the NEON site, the area is a fallow scrub land with hay crops, which are not known to store large amounts of carbon due to their short life cycle. **
 
 ## Part 2: Download and Merge data products
 
@@ -254,7 +254,7 @@ Calculate the vegetation carbon stocks of each site for each year using the foll
 -   Mountain Lake Biological Station (siteID: MLBS)
 -   Ordway-Swisher Biological Station (siteID: OSBS)
 
-**Answer 2:**
+**Answer 2: code chunk below. **
 
 ```{r}
 #filtering specific 4 site IDs
@@ -296,24 +296,24 @@ biomass equation: bm = Exp(B0 + B1*ln(dbh))
 -   Exp = exponential function
 -   ln = natural log base "e"
 
-**Answer 3:**
+**Answer 3: code chunk below**
 
 ```{r}
 #calculating the carbon of each tree
-individual_final <- individual_final |> mutate(carbon = 0.5*(exp(B0 + B1*log(stemDiameter, base = exp(1)))))
+individual_final <- individual_final |> mutate(carbon = 0.5*(exp(B0 + B1*log(stemDiameter))))
 
 ```
 
 **Question 4:** Using the table from Question 3, calculate the total carbon of each plot in each year. Your columns should be: `siteID`. `plotID`, `carbon`, `year`
 
-**Answer 4:**
+**Answer 4: code chunk below. **
 
 ```{r}
 #grouping every plotID - year combo
 individual_grouped <- individual_final |> 
   group_by(year, plotID, siteID) |> 
-  summarize(mean_carbon = mean(carbon, na.rm = TRUE)) |> 
-  select(year, plotID, siteID, mean_carbon)
+  summarize(carbon = sum(carbon, na.rm = TRUE)) |> 
+  select(year, plotID, siteID, carbon)
 
 ```
 
@@ -326,7 +326,7 @@ neon_plot <- tbl(con, "plot") |>
 
 individual_plot <- 
   left_join(individual_grouped, neon_plot, by = c("siteID", "plotID")) |> 
-  select(year, plotID, siteID, plotType, mean_carbon, totalSampledAreaTrees) |>
+  select(year, plotID, siteID, plotType, carbon, totalSampledAreaTrees) |>
   filter(plotType == "tower")
 
 ```
@@ -335,7 +335,7 @@ individual_plot <-
 
 ```{r}
 individual_plot <-
-  individual_plot |> mutate(carbonBYarea = mean_carbon/totalSampledAreaTrees)
+  individual_plot |> mutate(carbonBYarea = carbon/totalSampledAreaTrees)
 
 ```
 
@@ -374,7 +374,7 @@ individual_grouped2 |>
   theme_bw() +
   labs(title = "Mean Live Tree Carbon Stocks for Sites Within the NEON",
        x = "Year",
-       y = "Carbon Stock [UNITS]")
+       y = "Carbon Stock [kgC/m2]")
 
 ```
 
@@ -383,12 +383,21 @@ individual_grouped2 |>
 **Answer 9:**
 
 ```{r}
+#group_by
+ktable <- individual_plot |> 
+  group_by(year, plotID) |> 
+  summarize(mean_carbon = mean(carbonBYarea))
+
+# Print the table using kable
+library(kableExtra)
+
+kable(ktable, col.names = c("Year", "Plot ID", "Average Carbon Stock [kgC/m2]"))
 
 ```
 
 **Question 10:** Describe whether your data analysis supported your hypothesis from Part #1 and, if not, possible reasons why it did not.
 
-**Answer 10:**
+**Answer 10: The data analysis supports the hypothesis stated at the beginning of this assignment, with the BART site typically having the highest carbon stock followed closely by the MLBS site. While close, the BLAN site had the lowest carbon stock with the OSBS site having slightly more on average per year.  **
 
 ## Knitting and committing
 
